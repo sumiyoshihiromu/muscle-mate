@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザーテーブル
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now())
+  workouts  Workout[] // リレーション定義（User hasMany Workouts）
+}
+
+// トレーニング記録テーブル
+model Workout {
+  id        Int        @id @default(autoincrement())
+  title     String     // 例: "胸の日", "朝のランニング"
+  date      DateTime   @default(now())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id]) // BelongsTo
+  exercises Exercise[] // リレーション定義 (Workout hasMany Exercises)
+}
+
+// 種目ごとの記録テーブル
+model Exercise {
+  id        Int      @id @default(autoincrement())
+  name      String   // 例: "ベンチプレス"
+  weight    Float    // 重量 (kg)
+  reps      Int      // 回数
+  sets      Int      // セット数
+  workoutId Int
+  workout   Workout  @relation(fields: [workoutId], references: [id])
+}
