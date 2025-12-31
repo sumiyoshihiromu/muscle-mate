@@ -1,6 +1,8 @@
+/* app/globals.css */
 @import "tailwindcss";
 
 :root {
+  /* 常にライトモードの色を使います */
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,12 +14,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* 👇 ダークモードの設定（@media ...）を削除しました */
 
 body {
   background: var(--background);
