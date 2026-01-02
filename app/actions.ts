@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-// Laravelの store(Request $request) に相当
 export async function createWorkout(formData: FormData) {
   
   // 1. フォームデータの取得（$request->input('title')）
