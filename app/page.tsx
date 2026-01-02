@@ -34,7 +34,11 @@ export default async function Home() {
       <div className="grid gap-4">
         {user.workouts.map((workout) => (
           // Laravelの @foreach ($user->workouts as $workout) に相当
-          <div key={workout.id} className="border p-4 rounded-lg shadow bg-white">
+          <Link 
+            href={`/workouts/${workout.id}`} 
+            key={workout.id} 
+            className="block border p-4 rounded-lg shadow bg-white hover:bg-gray-50 transition"
+          >
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-semibold">{workout.title}</h2>
               <span className="text-sm text-gray-500">
@@ -50,7 +54,7 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

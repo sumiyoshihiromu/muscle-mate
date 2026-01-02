@@ -32,3 +32,29 @@ export async function createWorkout(formData: FormData) {
   // 4. リダイレクト (Laravelの return redirect('/'))
   redirect("/");
 }
+
+export async function addExercise(formData: FormData) {
+  // フォームから値を取得
+  const workoutId = parseInt(formData.get("workoutId") as string);
+  const name = formData.get("name") as string;
+  const weight = parseFloat(formData.get("weight") as string);
+  const reps = parseInt(formData.get("reps") as string);
+  const sets = parseInt(formData.get("sets") as string);
+
+  // DBに保存
+  await prisma.exercise.create({
+    data: {
+      name,
+      weight,
+      reps,
+      sets,
+      workoutId, // どのWorkoutに紐づくか
+    },
+  });
+
+  // 画面更新
+  // 特定のパスのキャッシュだけを更新します
+  revalidatePath(`/workouts/${workoutId}`);
+  
+  // ※今回はリダイレクトせず、そのまま同じページに留まります
+}
