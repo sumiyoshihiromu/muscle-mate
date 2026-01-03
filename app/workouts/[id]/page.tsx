@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { addExercise } from "@/app/actions"; // 後で作ります
+import { addExercise, deleteWorkout } from "@/app/actions";
 
 // Propsの型定義（paramsはPromiseとして受け取ります）
 interface PageProps {
@@ -13,6 +13,10 @@ export default async function WorkoutDetailPage({ params }: PageProps) {
   
   // IDを数値に変換（URLパラメータは文字列のため）
   const workoutId = parseInt(id);
+
+  // 👇 IDをあらかじめセットした「削除専用関数」を作る
+  // 第1引数は null (thisのコンテキスト)、第2引数が deleteWorkout の第1引数になります
+  const deleteWorkoutWithId = deleteWorkout.bind(null, workoutId);
 
   // 2. DBからデータを取得 (Laravelの Workout::with('exercises')->find($id))
   const workout = await prisma.workout.findUnique({
@@ -29,7 +33,16 @@ export default async function WorkoutDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-2">{workout.title}</h1>
+      <div className="flex justify-between items-start mb-2">
+        <h1 className="text-3xl font-bold">{workout.title}</h1>
+        <form action={deleteWorkoutWithId}>
+          <button 
+            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+          >
+            削除
+          </button>
+        </form>
+      </div>
       <p className="text-gray-500 mb-8">
         日付: {workout.date.toLocaleDateString()}
       </p>

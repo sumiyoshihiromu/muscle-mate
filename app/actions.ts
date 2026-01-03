@@ -58,3 +58,24 @@ export async function addExercise(formData: FormData) {
   
   // ※今回はリダイレクトせず、そのまま同じページに留まります
 }
+
+// 👇 1. IDを受け取るための引数を定義
+export async function deleteWorkout(id: number) {
+  
+  // 2. DBから削除 (Laravel: Workout::destroy($id))
+  // 関連するExerciseも消す必要がありますが、
+  // Prismaのschemaで `onDelete: Cascade` を設定していない場合、手動で消すか、トランザクションが必要です。
+  // 今回は単純化のため、Prismaがエラーを吐かないよう「関連データごと削除」を設定します。
+  
+  // ※本来は schema.prisma で onDelete: Cascade を設定するのがベストですが、
+  // ここではコードで解決する transaction を使ってみましょう。
+  await prisma.$transaction([
+    prisma.exercise.deleteMany({ where: { workoutId: id } }), // 子供を先に消す
+    prisma.workout.delete({ where: { id } }),                 // 親を消す
+  ]);
+
+  // 3. キャッシュクリアとリダイレクト
+  // 詳細ページを消したので、トップページに戻します
+  revalidatePath("/");
+  redirect("/");
+}
