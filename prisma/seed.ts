@@ -1,14 +1,22 @@
+// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs'; // 👈 インポート忘れずに
+
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. ユーザーを作成
+  // パスワードをハッシュ化
+  const hashedPassword = await bcrypt.hash('password123', 10);
+
   const user = await prisma.user.upsert({
     where: { email: 'test@example.com' },
-    update: {},
+    update: {
+      password: hashedPassword, // 既存データの更新時もパスワードを入れる
+    },
     create: {
       email: 'test@example.com',
       name: 'テストユーザー',
+      password: hashedPassword, // 👈 【ここがエラーの原因でした】必須なので追加
       workouts: {
         create: [
           {
