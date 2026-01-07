@@ -1,20 +1,22 @@
-'use server'; // 👈 【最重要】このファイル内の関数はすべてサーバー側でのみ実行されるという宣言
+'use server';
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
 
 export async function createWorkout(formData: FormData) {
   
-  // 1. フォームデータの取得（$request->input('title')）
+  // 1. フォームデータの取得
   const title = formData.get("title") as string;
   
-  // 簡易バリデーション (Laravelの $request->validate(...))
+  // 簡易バリデーション
   if (!title || title === "") {
     throw new Error("タイトルは必須です");
   }
 
-  // 2. DB保存 (Eloquentの create)
+  // DB保存
   // 今回は簡略化のため、固定のユーザー(ID=1)に紐づけます
   // 本来はログインユーザーのIDを使います
   await prisma.workout.create({
@@ -33,6 +35,7 @@ export async function createWorkout(formData: FormData) {
   redirect("/");
 }
 
+// エクササイズ追加処理
 export async function addExercise(formData: FormData) {
   // フォームから値を取得
   const workoutId = parseInt(formData.get("workoutId") as string);
@@ -59,7 +62,7 @@ export async function addExercise(formData: FormData) {
   // ※今回はリダイレクトせず、そのまま同じページに留まります
 }
 
-// 👇 1. IDを受け取るための引数を定義
+// 削除処理
 export async function deleteWorkout(id: number) {
   
   // 2. DBから削除 (Laravel: Workout::destroy($id))
@@ -78,4 +81,23 @@ export async function deleteWorkout(id: number) {
   // 詳細ページを消したので、トップページに戻します
   revalidatePath("/");
   redirect("/");
+}
+
+// ログイン
+export async function authenticate(formData: FormData) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'メールアドレスまたはパスワードが間違っています。';
+        default:
+          return 'エラーが発生しました。';
+      }
+    }
+    // Next.jsの仕様上、リダイレクトはエラーとして投げられるので、
+    // AuthError以外はそのまま再スローする必要があります。
+    throw error;
+  }
 }
